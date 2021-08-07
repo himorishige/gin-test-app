@@ -1,18 +1,24 @@
 package main
 
 import (
-	"net/http"
+	"gin-app/controller"
+	"gin-app/middleware"
 
 	"github.com/gin-gonic/gin"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 func main() {
 	engine:= gin.Default()
-	engine.LoadHTMLGlob(("templates/*"))
-	engine.GET("/", func(c *gin.Context) {
-		c.HTML(http.StatusOK, "index.html", gin.H{
-			"message": "hello gin",
-		})
-	})
+	// middleware
+	engine.Use(middleware.RecordUaAndTime)
+	todoEngine := engine.Group("/todo")
+	{
+		v1 := todoEngine.Group("/v1")
+		{
+			v1.GET("/list", controller.TodoList)
+			v1.POST("/add", controller.TodoAdd)
+		}
+	}
 	engine.Run(":3000")
 }
